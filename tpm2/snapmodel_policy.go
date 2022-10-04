@@ -22,6 +22,7 @@ package tpm2
 import (
 	"encoding/base64"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"hash"
 	"io"
@@ -31,6 +32,7 @@ import (
 	"golang.org/x/xerrors"
 
 	"github.com/snapcore/secboot"
+	"github.com/snapcore/snapd/logger"
 )
 
 const zeroSnapSystemEpoch uint32 = 0
@@ -181,6 +183,7 @@ func AddSnapModelProfile(profile *PCRProtectionProfile, params *SnapModelProfile
 		if err != nil {
 			return err
 		}
+		logger.Noticef("Added model profile, digest is: %s", hex.EncodeToString(digest))
 		subProfiles = append(subProfiles, NewPCRProtectionProfile().ExtendPCR(params.PCRAlgorithm, params.PCRIndex, digest))
 	}
 
@@ -226,6 +229,7 @@ func MeasureSnapModelToTPM(tpm *Connection, pcrIndex int, model secboot.SnapMode
 			}
 			return &tpmSnapModelHasher{tpm: tpm, seq: seq}, nil
 		}, model)
+		logger.Noticef("Measuring model, digest is: %s", hex.EncodeToString(digest))
 		if err != nil {
 			return xerrors.Errorf("cannot compute digest for algorithm %v: %w", s.Hash, err)
 		}
