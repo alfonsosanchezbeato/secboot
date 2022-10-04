@@ -37,6 +37,7 @@ import (
 
 	"github.com/snapcore/secboot/internal/keyring"
 	"github.com/snapcore/secboot/internal/luks2"
+	"github.com/snapcore/snapd/logger"
 )
 
 var (
@@ -246,6 +247,7 @@ func (s *activateWithKeyDataState) run() (success bool) {
 		}
 
 		if err := s.tryKeyDataAuthModeNone(k.KeyData); err != nil {
+			logger.Noticef("error when calling s.tryKeyDataAuthModeNone: %v", err)
 			k.err = err
 			continue
 		}
@@ -395,6 +397,7 @@ func ActivateVolumeWithMultipleKeyData(volumeName, sourceDevicePath string, keys
 	case true: // success!
 		return s.snapModelChecker(), nil
 	default: // failed - try recovery key
+		logger.Noticef("error when trying to activate key, trying recovery")
 		if rErr := activateWithRecoveryKey(volumeName, sourceDevicePath, nil, options.RecoveryKeyTries, options.KeyringPrefix); rErr != nil {
 			// failed with recovery key - return errors
 			var kdErrs []error
